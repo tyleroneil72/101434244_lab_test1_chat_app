@@ -22,6 +22,14 @@ const initializeSocket = (httpServer: any) => {
       io.to(room).emit('receiveMessage', newMessage);
     });
 
+    socket.on('typing', ({ room, username }) => {
+      socket.to(room).emit('userTyping', username);
+    });
+
+    socket.on('stopTyping', ({ room }) => {
+      socket.to(room).emit('userStoppedTyping');
+    });
+
     socket.on('disconnect', () => {
       console.log('User disconnected:', socket.id);
     });

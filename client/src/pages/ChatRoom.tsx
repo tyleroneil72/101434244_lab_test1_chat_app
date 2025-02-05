@@ -22,6 +22,8 @@ const ChatRoom = () => {
   const [currentRoom, setCurrentRoom] = useState<string>('General');
   const [newMessage, setNewMessage] = useState('');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const [typingUser, setTypingUser] = useState<string | null>(null);
+  const [typingDots, setTypingDots] = useState<string>('');
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -67,6 +69,35 @@ const ChatRoom = () => {
     };
   }, [currentRoom, joinAndFetchMessages]);
 
+  useEffect(() => {
+    socket.on('userTyping', (username: string) => {
+      setTypingUser(username);
+    });
+
+    socket.on('userStoppedTyping', () => {
+      setTypingUser(null);
+    });
+
+    return () => {
+      socket.off('userTyping');
+      socket.off('userStoppedTyping');
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typingUser) {
+      let count = 0;
+      const interval = setInterval(() => {
+        setTypingDots('.'.repeat((count % 3) + 1));
+        count++;
+      }, 500); // Change every 0.5s
+
+      return () => clearInterval(interval);
+    } else {
+      setTypingDots('');
+    }
+  }, [typingUser]);
+
   const sendMessage = () => {
     if (!newMessage.trim()) return;
 
@@ -79,7 +110,16 @@ const ChatRoom = () => {
     };
 
     socket.emit('sendMessage', messageData);
+    socket.emit('stopTyping', { room: currentRoom });
     setNewMessage('');
+  };
+
+  const handleTyping = () => {
+    if (newMessage.trim()) {
+      socket.emit('typing', { room: currentRoom, username: user.username });
+    } else {
+      socket.emit('stopTyping', { room: currentRoom });
+    }
   };
 
   const handleStartDM = async (otherUser: string) => {
@@ -169,6 +209,16 @@ const ChatRoom = () => {
               </div>
             );
           })}
+
+          {/* Typing Indicator */}
+          {typingUser && currentRoom.startsWith('DM_') && (
+            <div className='flex justify-start'>
+              <div className='max-w-xs rounded-lg bg-gray-200 p-3 text-black shadow-md'>
+                <div className='text-sm font-semibold'>{typingUser}</div>
+                <div className='text-md'>{typingDots}</div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Message Input */}
@@ -176,7 +226,10 @@ const ChatRoom = () => {
           <input
             type='text'
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={(e) => {
+              setNewMessage(e.target.value);
+              handleTyping();
+            }}
             placeholder='Type a message...'
             className='flex-1 rounded-lg border p-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none'
           />
