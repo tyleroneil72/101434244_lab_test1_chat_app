@@ -41,3 +41,6 @@ npm run build
 ```bash
 npm run start
 ```
+
+### Note:
+For more detailed examples view the [PDF here](https://github.com/tyleroneil72/101434244_lab_test1_chat_app/blob/main/COMP3133-LabTestOne.pdf)
