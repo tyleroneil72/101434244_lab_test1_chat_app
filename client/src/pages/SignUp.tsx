@@ -18,9 +18,24 @@ const SignUp = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO API call
-    console.log('Signing up...', formData);
-    navigate('/chat');
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert('Signup successful! Please login.');
+        navigate('/login');
+      } else {
+        alert(data.message || 'Signup failed');
+      }
+    } catch (error) {
+      alert('An error occurred');
+      console.error(error);
+    }
   };
 
   return (
