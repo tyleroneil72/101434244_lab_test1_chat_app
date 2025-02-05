@@ -4,6 +4,7 @@ import express from 'express';
 import { createServer } from 'http';
 import mongoose from 'mongoose';
 import path from 'path';
+import authRoutes from './routes/auth';
 
 dotenvConfig({ path: path.join(__dirname, '../../../.env') });
 
@@ -15,6 +16,8 @@ const httpServer = createServer(app);
 
 app.use(cors());
 app.use(express.json());
+
+app.use('/api/auth', authRoutes);
 
 (async () => {
   try {
