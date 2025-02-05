@@ -1,5 +1,7 @@
+import AppRoutes from './routes';
+
 const App = () => {
-  return <div>Client</div>;
+  return <AppRoutes />;
 };
 
 export default App;
