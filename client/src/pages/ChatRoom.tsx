@@ -15,7 +15,7 @@ interface Message {
   timestamp: string;
 }
 
-const Chatroom = () => {
+const ChatRoom = () => {
   const navigate = useNavigate();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -24,18 +24,18 @@ const Chatroom = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
-    fetchRooms();
-  }, []);
+    const fetchRooms = async () => {
+      try {
+        const response = await fetch(`/api/chat/rooms/${user.username}`);
+        const data = await response.json();
+        setRooms(data);
+      } catch (error) {
+        console.error('Error fetching rooms:', error);
+      }
+    };
 
-  const fetchRooms = async () => {
-    try {
-      const response = await fetch('/api/chat/rooms');
-      const data = await response.json();
-      setRooms(data);
-    } catch (error) {
-      console.error('Error fetching rooms:', error);
-    }
-  };
+    fetchRooms();
+  }, [user.username]);
 
   const fetchMessages = async (room: string) => {
     try {
@@ -82,6 +82,32 @@ const Chatroom = () => {
     setNewMessage('');
   };
 
+  const handleStartDM = async (otherUser: string) => {
+    if (otherUser === user.username) return; // Prevent self-DM
+
+    try {
+      const response = await fetch('/api/chat/dm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user1: user.username, user2: otherUser })
+      });
+
+      const dmRoom = await response.json();
+      setCurrentRoom(dmRoom.name);
+    } catch (error) {
+      console.error('Error creating DM:', error);
+    }
+  };
+
+  const getRoomDisplayName = (roomName: string) => {
+    if (!roomName.startsWith('DM_')) return roomName;
+
+    const users = roomName.replace('DM_', '').split('_');
+    const otherUser = users.find((username) => username !== user.username);
+
+    return otherUser ? `${otherUser} (DM)` : 'Direct Message';
+  };
+
   const logout = () => {
     localStorage.removeItem('user');
     navigate('/login');
@@ -101,7 +127,7 @@ const Chatroom = () => {
                 currentRoom === room.name ? 'bg-indigo-400' : 'hover:bg-indigo-500'
               }`}
             >
-              {room.name}
+              {getRoomDisplayName(room.name)}
             </li>
           ))}
         </ul>
@@ -110,7 +136,7 @@ const Chatroom = () => {
       {/* Chat Area */}
       <div className='flex w-3/4 flex-col'>
         <div className='flex justify-between bg-white p-4 shadow-md'>
-          <h2 className='text-lg font-bold text-indigo-600'>Room: {currentRoom}</h2>
+          <h2 className='text-lg font-bold text-indigo-600'>Room: {getRoomDisplayName(currentRoom)}</h2>
           <button onClick={logout} className='rounded-lg bg-indigo-500 px-4 py-2 text-white hover:bg-indigo-600'>
             Logout
           </button>
@@ -129,7 +155,12 @@ const Chatroom = () => {
                     isUserMessage ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-black'
                   }`}
                 >
-                  <div className='text-sm font-semibold'>{msg.username}</div>
+                  <div
+                    className='cursor-pointer text-sm font-semibold hover:underline'
+                    onClick={() => handleStartDM(msg.username)}
+                  >
+                    {msg.username}
+                  </div>
                   <div className='text-md'>{msg.message}</div>
                   <div className={`mt-1 text-xs ${isUserMessage ? 'text-gray-300' : 'text-gray-700'}`}>
                     {formattedTime}
@@ -161,4 +192,4 @@ const Chatroom = () => {
   );
 };
 
-export default Chatroom;
+export default ChatRoom;
