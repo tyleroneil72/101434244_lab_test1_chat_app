@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import socket from '../utils/Socket';
 
 interface Room {
   _id: string;
@@ -8,49 +9,77 @@ interface Room {
 
 interface Message {
   _id: string;
+  room: string;
   username: string;
   message: string;
   timestamp: string;
 }
 
-const ChatRoom = () => {
+const Chatroom = () => {
   const navigate = useNavigate();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [currentRoom, setCurrentRoom] = useState<string>('general');
+  const [currentRoom, setCurrentRoom] = useState<string>('General');
   const [newMessage, setNewMessage] = useState('');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
     fetchRooms();
-    fetchMessages(currentRoom);
-  }, [currentRoom]);
+  }, []);
 
   const fetchRooms = async () => {
-    const response = await fetch('/api/chat/rooms');
-    const data = await response.json();
-    setRooms(data);
+    try {
+      const response = await fetch('/api/chat/rooms');
+      const data = await response.json();
+      setRooms(data);
+    } catch (error) {
+      console.error('Error fetching rooms:', error);
+    }
   };
 
   const fetchMessages = async (room: string) => {
-    const response = await fetch(`/api/chat/messages/${room}`);
-    const data = await response.json();
-    setMessages(data);
+    try {
+      const response = await fetch(`/api/chat/messages/${room}`);
+      const data = await response.json();
+      setMessages(data);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    }
   };
 
-  const sendMessage = async () => {
+  const joinAndFetchMessages = useCallback(() => {
+    socket.emit('joinRoom', currentRoom);
+    fetchMessages(currentRoom);
+  }, [currentRoom]);
+
+  useEffect(() => {
+    joinAndFetchMessages();
+
+    const messageListener = (message: Message) => {
+      setMessages((prev) => [...prev, { ...message, timestamp: message.timestamp || new Date().toISOString() }]);
+    };
+
+    socket.off('receiveMessage', messageListener);
+    socket.on('receiveMessage', messageListener);
+
+    return () => {
+      socket.off('receiveMessage', messageListener);
+    };
+  }, [currentRoom, joinAndFetchMessages]);
+
+  const sendMessage = () => {
     if (!newMessage.trim()) return;
 
-    const response = await fetch('/api/chat/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ room: currentRoom, username: user.username, message: newMessage })
-    });
+    const messageData: Message = {
+      _id: Date.now().toString(),
+      room: currentRoom,
+      username: user.username,
+      message: newMessage,
+      timestamp: new Date().toISOString()
+    };
 
-    if (response.ok) {
-      setNewMessage('');
-      fetchMessages(currentRoom);
-    }
+    socket.emit('sendMessage', messageData);
+    setNewMessage('');
   };
 
   const logout = () => {
@@ -82,7 +111,7 @@ const ChatRoom = () => {
       <div className='flex w-3/4 flex-col'>
         <div className='flex justify-between bg-white p-4 shadow-md'>
           <h2 className='text-lg font-bold text-indigo-600'>Room: {currentRoom}</h2>
-          <button onClick={logout} className='rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600'>
+          <button onClick={logout} className='rounded-lg bg-indigo-500 px-4 py-2 text-white hover:bg-indigo-600'>
             Logout
           </button>
         </div>
@@ -118,4 +147,4 @@ const ChatRoom = () => {
   );
 };
 
-export default ChatRoom;
+export default Chatroom;
