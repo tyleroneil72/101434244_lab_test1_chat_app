@@ -117,13 +117,27 @@ const Chatroom = () => {
         </div>
 
         {/* Messages */}
-        <div className='flex-1 overflow-y-auto p-4'>
-          {messages.map((msg) => (
-            <div key={msg._id} className='mb-2'>
-              <span className='font-bold text-indigo-600'>{msg.username}: </span>
-              {msg.message}
-            </div>
-          ))}
+        <div className='flex-1 space-y-3 overflow-y-auto p-4'>
+          {messages.map((msg) => {
+            const isUserMessage = msg.username === user.username;
+            const formattedTime = new Date(msg.timestamp).toLocaleString();
+
+            return (
+              <div key={msg._id} className={`flex ${isUserMessage ? 'justify-end' : 'justify-start'}`}>
+                <div
+                  className={`max-w-xs rounded-lg p-3 shadow-md md:max-w-sm lg:max-w-md ${
+                    isUserMessage ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-black'
+                  }`}
+                >
+                  <div className='text-sm font-semibold'>{msg.username}</div>
+                  <div className='text-md'>{msg.message}</div>
+                  <div className={`mt-1 text-xs ${isUserMessage ? 'text-gray-300' : 'text-gray-700'}`}>
+                    {formattedTime}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* Message Input */}
