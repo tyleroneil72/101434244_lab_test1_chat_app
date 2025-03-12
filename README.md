@@ -1,21 +1,18 @@
-# Lab Test One
+# Chat Room App
 
-101434244, Tyler O'Neil
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-1. GiHub Repo
-   Git used with useful commit log, proper headings (chore, feature, etc)
-2. Working Signup Page
-   Username must be unique checked from database
-3. Working Login/Logout
-   Using Local Storage for session
-4. MongoDB Validation
-   Proper validation on all schemas, cannot crash
-5. Room Join/Leave
-   You can join and leave rooms by selecting them from the sidebar
-6. Typing Indicator
-   Typing indicator works on 1-1 messaging
-7. Chat Functionality with MongoDB Storage
-   All messages are persisted in Mongo
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
+![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)
+![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
+![ESLint](https://img.shields.io/badge/eslint-3A33D1?style=for-the-badge&logo=eslint&logoColor=white)
+![Prettier](https://img.shields.io/badge/prettier-1A2C34?style=for-the-badge&logo=prettier&logoColor=F7BA3E)
+
+## Description
+The app includes a working signup page where usernames must be unique and checked against the database. Users can log in and log out with session management handled via Local Storage. MongoDB enforces proper validation on all schemas to prevent crashes. Users can join and leave chat rooms by selecting them from the sidebar. A typing indicator is implemented for one-on-one messaging. All chat messages are stored and persisted in MongoDB.
 
 ## Example
 
@@ -42,5 +39,11 @@ npm run build
 npm run start
 ```
 
-### Note:
-For more detailed examples view the [PDF here](https://github.com/tyleroneil72/101434244_lab_test1_chat_app/blob/main/COMP3133-LabTestOne.pdf)
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Contact
+
+For any inquiries or questions, you can reach me at tyleroneildev@gmail.com
+or on my linkedin at https://ca.linkedin.com/in/tyler-oneil-dev
